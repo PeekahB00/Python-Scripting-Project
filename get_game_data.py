@@ -31,6 +31,74 @@ def find_all_game_paths(source: str) -> List[str]:
     return game_paths
 
 
+def get_name_from_paths(paths: List[str], to_strip: str) -> List[str]:
+    """
+    Process a list of paths and modify the directory names by removing a specified substring.
+
+    Args:
+        paths (List[str]): A list of paths where each path is a string.
+        to_strip (str): The substring to remove from each directory name.
+
+    Returns:
+        List[str]: A list of modified directory names with the specified substring removed.
+    """
+    new_names: List[str] = []
+    for path in paths:
+        _, dir_name = os.path.split(path)
+        new_dir_name = dir_name.replace(to_strip, "")
+        new_names.append(new_dir_name)
+
+    return new_names
+
+
+def create_dir(path: str) -> None:
+    """
+    Create a directory at the specified path if it does not already exist.
+
+    Args:
+        path (str): The path to the directory to be created.
+
+    Returns:
+        None
+    """
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+
+def copy_and_overwrite(source: str, destination: str) -> None:
+    """
+    Copy the contents of the source directory to the destination directory,
+    overwriting the destination directory if it already exists.
+
+    Args:
+        source (str): The path to the source directory.
+        destination (str): The path to the destination directory to be created or overwritten.
+
+    Returns:
+        None
+    """
+    if os.path.exists(destination):
+        shutil.rmtree(destination)
+    shutil.copytree(source, destination)
+
+
+def create_json_metadata_file(path: str, game_dirs: List[str]) -> None:
+    """
+    Create a JSON file with metadata about game directories.
+
+    Args:
+        path (str): The path where the JSON file will be created.
+        game_dirs (List[str]): A list of game directory names.
+
+    Returns:
+        None
+    """
+    data = {"gameNames": game_dirs, "numberOfGames": len(game_dirs)}
+
+    with open(path, "w") as f:
+        json.dump(data, f, indent=4)
+
+
 def main(source: str, target: str) -> None:
     current_working_directory = os.getcwd()
     source_path = os.path.join(current_working_directory, source)
@@ -41,9 +109,17 @@ def main(source: str, target: str) -> None:
         return
 
     game_paths = find_all_game_paths(source_path)
-    print("Found game directories: ")
-    for path in game_paths:
-        print(path)
+    new_game_dirs = get_name_from_paths(game_paths, "_game")
+    print(new_game_dirs)
+
+    create_dir(target_path)
+
+    for src, dest in zip(game_paths, new_game_dirs):
+        dest_path = os.path.join(target_path, dest)
+        copy_and_overwrite(src, dest_path)
+
+    json_file_path = os.path.join(target_path, "metadata.json")
+    create_json_metadata_file(json_file_path, new_game_dirs)
 
 
 if __name__ == "__main__":
