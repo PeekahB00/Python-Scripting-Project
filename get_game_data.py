@@ -3,11 +3,12 @@ import json
 import shutil
 from subprocess import PIPE, run
 import sys
+from typing import List
 
 GAME_DIRECTORY_PATTERN = "game"
 
 
-def find_all_game_paths(source):
+def find_all_game_paths(source: str) -> List[str]:
     """
     Recursively find all directories within the given source directory that
     contain the specified pattern in their name.
@@ -19,7 +20,7 @@ def find_all_game_paths(source):
         list of str: A list of paths to directories that contain the pattern
         in their name.
     """
-    game_paths = []
+    game_paths: List[str] = []
 
     for root, dirs, files in os.walk(source):
         for directory in dirs:
@@ -30,7 +31,7 @@ def find_all_game_paths(source):
     return game_paths
 
 
-def main(source, target):
+def main(source: str, target: str) -> None:
     current_working_directory = os.getcwd()
     source_path = os.path.join(current_working_directory, source)
     target_path = os.path.join(current_working_directory, target)
