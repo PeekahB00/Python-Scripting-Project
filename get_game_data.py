@@ -6,6 +6,8 @@ import sys
 from typing import List
 
 GAME_DIRECTORY_PATTERN = "game"
+GAME_CODE_EXTENSION = ".go"
+GAME_COMPILE_COMMAND = ["go", "build"]
 
 
 def find_all_game_paths(source: str) -> List[str]:
@@ -97,6 +99,31 @@ def create_json_metadata_file(path: str, game_dirs: List[str]) -> None:
 
     with open(path, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def compile_game_code(path: str) -> None:
+    """
+    Finds and compiles the game code file in the given directory path.
+
+    Args:
+        path (str): The directory path where the code is located.
+    """
+    code_file_name = None
+
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(GAME_CODE_EXTENSION):
+                code_file_name = file
+                break
+
+        break
+
+    if code_file_name is None:
+        print("No game code file found.")
+        return
+
+    # Construct the command with the full path of the code file
+    command = GAME_COMPILE_COMMAND + [code_file_name]
 
 
 def main(source: str, target: str) -> None:
